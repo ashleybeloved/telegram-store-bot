@@ -46,5 +46,7 @@ func main() {
 	bh.Handle(handlers.SendDeposit, th.TextEqual("💳 Пополнить баланс"))
 	bh.Handle(handlers.SendSupport, th.TextEqual("🆘 Поддержка"))
 
+	bh.HandleCallbackQuery(handlers.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
+
 	_ = bh.Start()
 }

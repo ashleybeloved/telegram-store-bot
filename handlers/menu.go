@@ -26,11 +26,11 @@ func SendMainMenu(ctx *th.Context, update telego.Update) (err error) {
 			tu.KeyboardButton("🛍 Каталог"),
 		),
 		tu.KeyboardRow(
-			tu.KeyboardButton("🛒 Корзина"),
+			tu.KeyboardButton("💳 Пополнить баланс"),
 			tu.KeyboardButton("👤 Профиль"),
 		),
 		tu.KeyboardRow(
-			tu.KeyboardButton("💳 Пополнить баланс"),
+			tu.KeyboardButton(""),
 			tu.KeyboardButton("🆘 Поддержка"),
 		),
 	).WithResizeKeyboard()
@@ -75,9 +75,15 @@ func SendProfile(ctx *th.Context, update telego.Update) (err error) {
 
 	chatID := update.Message.Chat.ID
 
+	keyboard := tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("Обновить").WithCallbackData("profileRefresh"),
+		),
+	)
+
 	msg := tu.Message(
 		tu.ID(chatID),
-		"<b>Профиль "+user.Firstname+":</b>\n\nID: "+strconv.Itoa(user.ID)+"\nЯзык: "+user.LangCode+"\nБаланс: "+strconv.FormatInt(user.Balance, 10)+"₽"+"\nРоль: "+user.Role).WithParseMode(telego.ModeHTML)
+		"<b>Профиль "+user.Firstname+":</b>\n\nID: "+strconv.Itoa(user.ID)+"\nЯзык: "+user.LangCode+"\nБаланс: "+strconv.FormatInt(user.Balance, 10)+"₽"+"\nРоль: "+user.Role).WithParseMode(telego.ModeHTML).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendMessage(ctx, msg)
 

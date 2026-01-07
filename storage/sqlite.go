@@ -107,3 +107,14 @@ func FindUser(userid int64) (*models.User, error) {
 
 	return &user, nil
 }
+
+func RefreshUser(userid int64, username string, firstname string, lastname string, lang_code string) (*models.User, error) {
+	query := `UPDATE users SET username = ?, firstname = ?, lastname = ?, language_code WHERE user_id = ?;`
+
+	_, err := db.Exec(query, username, firstname, lastname, lang_code, userid)
+	if err != nil {
+		return nil, err
+	}
+
+	return FindUser(userid)
+}
