@@ -17,7 +17,7 @@ func OpenSQLite() error {
 	}
 
 	var err error
-	db, err = sql.Open("sqlite", "./data/users.db")
+	db, err = sql.Open("sqlite", "./data/database.db")
 	if err != nil {
 		return err
 	}
@@ -38,6 +38,30 @@ func OpenSQLite() error {
 	state TEXT DEFAULT 'nothing',
 	updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+	)`)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS categories (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL
+	)`)
+
+	if err != nil {
+		return err
+	}
+
+	_, err = db.Exec(`CREATE TABLE IF NOT EXISTS products (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+    category_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    price INTEGER NOT NULL,
+    image_id TEXT,
+    stock INTEGER DEFAULT 0,
+    FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
 	)`)
 
 	if err != nil {
