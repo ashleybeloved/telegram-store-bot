@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"TelegramShop/storage"
-	"strconv"
+	"fmt"
 
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
@@ -46,10 +46,43 @@ func SendMainMenu(ctx *th.Context, update telego.Update) (err error) {
 }
 
 func SendCatalog(ctx *th.Context, update telego.Update) (err error) {
+	page := 1
+
+	pages, err := storage.GetPagesForCategories()
+	if err != nil {
+		return err
+	}
+
+	categories, err := storage.GetCategories(page)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	for _, cat := range categories {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("cat:%d", cat.ID)),
+		))
+	}
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPage:%d:%d", page-1, pages)),
+			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPage:%d:%d", page+1, pages)),
+		),
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
+			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
 	msg := tu.Message(
 		tu.ID(update.Message.Chat.ID),
-		"Не реализовано =(",
-	)
+		"Выберите категорию товаров:",
+	).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendMessage(ctx, msg)
 
@@ -77,13 +110,18 @@ func SendProfile(ctx *th.Context, update telego.Update) (err error) {
 
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("Обновить").WithCallbackData("profileRefresh"),
+			tu.InlineKeyboardButton("🔄 Обновить").WithCallbackData("profileRefresh"),
 		),
 	)
 
 	msg := tu.Message(
 		tu.ID(chatID),
-		"<b>Профиль "+user.Firstname+":</b>\n\nID: "+strconv.Itoa(user.ID)+"\nЯзык: "+user.LangCode+"\nБаланс: "+strconv.FormatInt(user.Balance, 10)+"₽"+"\nРоль: "+user.Role).WithParseMode(telego.ModeHTML).WithReplyMarkup(keyboard)
+		fmt.Sprintf("<b>Профиль %s:</b>\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
+			user.Firstname,
+			user.ID,
+			user.LangCode,
+			user.Balance,
+			user.Role)).WithParseMode(telego.ModeHTML).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendMessage(ctx, msg)
 
