@@ -11,43 +11,8 @@ import (
 	tu "github.com/mymmrac/telego/telegoutil"
 )
 
-func CallbackRefreshProfile(ctx *th.Context, query telego.CallbackQuery) error {
-	chatID := query.From.ID
-	username := query.From.Username
-	firstname := query.From.FirstName
-	lastname := query.From.LastName
-	lang_code := query.From.LanguageCode
-
-	user, err := storage.RefreshUser(chatID, username, firstname, lastname, lang_code)
-	if err != nil {
-		return err
-	}
-
-	editMsg := tu.EditMessageText(
-		tu.ID(chatID),
-		query.Message.Message().MessageID,
-		fmt.Sprintf("<b>Профиль %s:</b>\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
-			user.Firstname,
-			user.ID,
-			user.LangCode,
-			user.Balance,
-			user.Role)).WithParseMode(telego.ModeHTML).WithReplyMarkup(query.Message.Message().ReplyMarkup)
-
-	ctx.Bot().EditMessageText(ctx, editMsg)
-
-	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Обновлено!"))
-}
-
-func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
-	data := strings.Split(query.Data, ":")
-	pageStr := data[1]
-	pagesStr := data[2]
-	pages, _ := strconv.Atoi(pagesStr)
-	page, _ := strconv.Atoi(pageStr)
-
-	if page < 1 {
-		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Не существующая страница"))
-	}
+func CallbackCancelCat(ctx *th.Context, query telego.CallbackQuery) error {
+	page := 1
 
 	pages, err := storage.GetPagesForCategories()
 	if err != nil {
@@ -63,15 +28,15 @@ func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
 
 	for _, cat := range categories {
 		rows = append(rows, tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("cat:%d", cat.ID)),
+			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("category:%d", cat.ID)),
 		))
 	}
 
 	rows = append(rows,
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPage:%d:%d", page-1, pages)),
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPageCat:%d:%d", page-1, pages)),
 			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
-			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPage:%d:%d", page+1, pages)),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPageCat:%d:%d", page+1, pages)),
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
@@ -91,15 +56,77 @@ func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
 	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
 }
 
-func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
+func CallbackCancel(ctx *th.Context, query telego.CallbackQuery) error {
+	user_id := query.From.ID
+	username := query.From.Username
+	firstname := query.From.FirstName
+	lastname := query.From.LastName
+	lang_code := query.From.LanguageCode
+
+	storage.AddUser(user_id, username, firstname, lastname, lang_code)
+
+	photo := "AgACAgIAAxkBAAPGaV6tpwnR1_akAyzb6MH26kzBpNgAAkgTaxuV-fBKuPW7m2HJYfIBAAMCAAN5AAM4BA"
+
+	keyboard := tu.Keyboard(
+		tu.KeyboardRow(
+			tu.KeyboardButton("🛍 Каталог"),
+		),
+		tu.KeyboardRow(
+			tu.KeyboardButton("💳 Пополнить баланс"),
+			tu.KeyboardButton("👤 Профиль"),
+		),
+		tu.KeyboardRow(
+			tu.KeyboardButton(""),
+			tu.KeyboardButton("🆘 Поддержка"),
+		),
+	).WithResizeKeyboard()
+
+	msg := tu.Photo(
+		tu.ID(user_id),
+		tu.FileFromID(photo),
+	).WithCaption(firstname + ", добро пожаловать в *heaven.help*").WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+
+	ctx.Bot().SendPhoto(ctx, msg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackRefreshProfile(ctx *th.Context, query telego.CallbackQuery) error {
+	chatID := query.From.ID
+	username := query.From.Username
+	firstname := query.From.FirstName
+	lastname := query.From.LastName
+	lang_code := query.From.LanguageCode
+
+	user, err := storage.RefreshUser(chatID, username, firstname, lastname, lang_code)
+	if err != nil {
+		return err
+	}
+
+	editMsg := tu.EditMessageText(
+		tu.ID(chatID),
+		query.Message.Message().MessageID,
+		fmt.Sprintf("*Профиль %s:*\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
+			user.Firstname,
+			user.ID,
+			user.LangCode,
+			user.Balance,
+			user.Role)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(query.Message.Message().ReplyMarkup)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Обновлено!"))
+}
+
+func CallbackPrevPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
 	pageStr := data[1]
 	pagesStr := data[2]
 	pages, _ := strconv.Atoi(pagesStr)
 	page, _ := strconv.Atoi(pageStr)
 
-	if page > pages {
-		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Не существующая страница"))
+	if page < 1 {
+		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
 	}
 
 	pages, err := storage.GetPagesForCategories()
@@ -116,15 +143,15 @@ func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
 
 	for _, cat := range categories {
 		rows = append(rows, tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("cat:%d", cat.ID)),
+			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("category:%d", cat.ID)),
 		))
 	}
 
 	rows = append(rows,
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPage:%d:%d", page-1, pages)),
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPageCat:%d:%d", page-1, pages)),
 			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
-			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPage:%d:%d", page+1, pages)),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPageCat:%d:%d", page+1, pages)),
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
@@ -138,6 +165,322 @@ func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
 		query.Message.Message().MessageID,
 		"Выберите категорию товаров:",
 	).WithReplyMarkup(keyboard)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackNextPageCat(ctx *th.Context, query telego.CallbackQuery) error {
+	data := strings.Split(query.Data, ":")
+	pageStr := data[1]
+	pagesStr := data[2]
+	pages, _ := strconv.Atoi(pagesStr)
+	page, _ := strconv.Atoi(pageStr)
+
+	if page > pages {
+		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
+	}
+
+	pages, err := storage.GetPagesForCategories()
+	if err != nil {
+		return err
+	}
+
+	categories, err := storage.GetCategories(page)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	for _, cat := range categories {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("category:%d", cat.ID)),
+		))
+	}
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPageCat:%d:%d", page-1, pages)),
+			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPageCat:%d:%d", page+1, pages)),
+		),
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
+			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	editMsg := tu.EditMessageText(
+		tu.ID(query.From.ID),
+		query.Message.Message().MessageID,
+		"Выберите категорию товаров:",
+	).WithReplyMarkup(keyboard)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackCategory(ctx *th.Context, query telego.CallbackQuery) error {
+	page := 1
+	data := strings.Split(query.Data, ":")
+	cat_idStr := data[1]
+	cat_id, _ := strconv.Atoi(cat_idStr)
+
+	pages, err := storage.GetPagesForProducts(cat_id)
+
+	products, err := storage.GetProducts(page, cat_id)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	for _, product := range products {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton(product.Name).WithCallbackData(fmt.Sprintf("product:%d", product.ID)),
+		))
+	}
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPage:%d:%d:%d", page-1, pages, cat_id)),
+			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPage:%d:%d:%d", page+1, pages, cat_id)),
+		),
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancelCat"),
+			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	editMsg := tu.EditMessageText(
+		tu.ID(query.From.ID),
+		query.Message.Message().MessageID,
+		"Выберите товар в категории:",
+	).WithReplyMarkup(keyboard)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
+	data := strings.Split(query.Data, ":")
+	pageStr := data[1]
+	pagesStr := data[2]
+	cat_idStr := data[3]
+	cat_id, _ := strconv.Atoi(cat_idStr)
+	pages, _ := strconv.Atoi(pagesStr)
+	page, _ := strconv.Atoi(pageStr)
+
+	if page < 1 {
+		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
+	}
+
+	pages, err := storage.GetPagesForProducts(cat_id)
+	if err != nil {
+		return err
+	}
+
+	products, err := storage.GetProducts(page, cat_id)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	for _, product := range products {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton(product.Name).WithCallbackData(fmt.Sprintf("product:%d", product.ID)),
+		))
+	}
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPage:%d:%d:%d", page-1, pages, cat_id)),
+			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPage:%d:%d:%d", page+1, pages, cat_id)),
+		),
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancelCat"),
+			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	editMsg := tu.EditMessageText(
+		tu.ID(query.From.ID),
+		query.Message.Message().MessageID,
+		"Выберите товар в категории:",
+	).WithReplyMarkup(keyboard)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
+	data := strings.Split(query.Data, ":")
+	pageStr := data[1]
+	pagesStr := data[2]
+	cat_idStr := data[3]
+	cat_id, _ := strconv.Atoi(cat_idStr)
+	pages, _ := strconv.Atoi(pagesStr)
+	page, _ := strconv.Atoi(pageStr)
+
+	if page > pages {
+		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
+	}
+
+	pages, err := storage.GetPagesForProducts(cat_id)
+	if err != nil {
+		return err
+	}
+
+	products, err := storage.GetProducts(page, cat_id)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	for _, product := range products {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton(product.Name).WithCallbackData(fmt.Sprintf("product:%d", product.ID)),
+		))
+	}
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPage:%d:%d:%d", page-1, pages, cat_id)),
+			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPage:%d:%d:%d", page+1, pages, cat_id)),
+		),
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancelCat"),
+			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	editMsg := tu.EditMessageText(
+		tu.ID(query.From.ID),
+		query.Message.Message().MessageID,
+		"Выберите товар в категории:",
+	).WithReplyMarkup(keyboard)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackProduct(ctx *th.Context, query telego.CallbackQuery) error {
+	data := strings.Split(query.Data, ":")
+	product_idStr := data[1]
+	product_id, _ := strconv.Atoi(product_idStr)
+
+	product, err := storage.GetProduct(product_id)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData(fmt.Sprintf("category:%d", product.CategoryID)),
+			tu.InlineKeyboardButton("🛒 Купить").WithCallbackData(fmt.Sprintf("buyProduct:%d", product.ID)),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	editMsg := tu.EditMessageText(
+		tu.ID(query.From.ID),
+		query.Message.Message().MessageID,
+		fmt.Sprintf("Товар #%v: *%s*\n\nОписание: %s\n\nОсталось: %d\n\nЦена: *%d₽*", product.ID, product.Name, product.Description, product.Stock, product.Price/100),
+	).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackBuyProduct(ctx *th.Context, query telego.CallbackQuery) error {
+	data := strings.Split(query.Data, ":")
+	product_idStr := data[1]
+	product_id, _ := strconv.Atoi(product_idStr)
+
+	user, err := storage.FindUser(query.From.ID)
+	if err != nil {
+		return err
+	}
+
+	product, err := storage.GetProduct(product_id)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData(fmt.Sprintf("product:%d", product.ID)),
+			tu.InlineKeyboardButton("🛒 Уверен").WithCallbackData(fmt.Sprintf("attentionBuy:%d", product.ID)),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	editMsg := tu.EditMessageText(
+		tu.ID(query.From.ID),
+		query.Message.Message().MessageID,
+		fmt.Sprintf("Вы уверены что хотите купить: *%s* за *%v₽*?\n\nВаш баланс: %v₽", product.Name, product.Price/100, user.Balance/100),
+	).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+
+	ctx.Bot().EditMessageText(ctx, editMsg)
+
+	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
+}
+
+func CallbackBuy(ctx *th.Context, query telego.CallbackQuery) error {
+	data := strings.Split(query.Data, ":")
+	product_idStr := data[1]
+	product_id, _ := strconv.Atoi(product_idStr)
+
+	user, err := storage.FindUser(query.From.ID)
+	if err != nil {
+		return err
+	}
+
+	product, err := storage.GetProduct(product_id)
+	if err != nil {
+		return err
+	}
+
+	err = storage.BuyProduct(user.UserID, product.ID)
+	if err != nil {
+		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText(fmt.Sprint(err)))
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ В Каталог").WithCallbackData(fmt.Sprintf("cancelCat:%d", product.ID)),
+			tu.InlineKeyboardButton("🛒 Мои покупки").WithCallbackData(fmt.Sprintf("category:%d", product.CategoryID)),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	editMsg := tu.EditMessageText(
+		tu.ID(query.From.ID),
+		query.Message.Message().MessageID,
+		fmt.Sprintf("Вы успешно приобрели: *%s*", product.Name),
+	).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().EditMessageText(ctx, editMsg)
 

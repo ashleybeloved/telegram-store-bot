@@ -41,14 +41,21 @@ func main() {
 	bh.Handle(handlers.SendMainMenu, th.CommandEqual("start"))
 
 	bh.Handle(handlers.SendCatalog, th.TextEqual("🛍 Каталог"))
-	bh.Handle(handlers.SendCart, th.TextEqual("🛒 Корзина"))
 	bh.Handle(handlers.SendProfile, th.TextEqual("👤 Профиль"))
 	bh.Handle(handlers.SendDeposit, th.TextEqual("💳 Пополнить баланс"))
 	bh.Handle(handlers.SendSupport, th.TextEqual("🆘 Поддержка"))
 
+	bh.HandleCallbackQuery(handlers.CallbackNextPageCat, th.CallbackDataContains("nextPageCat"))
+	bh.HandleCallbackQuery(handlers.CallbackPrevPageCat, th.CallbackDataContains("prevPageCat"))
 	bh.HandleCallbackQuery(handlers.CallbackNextPage, th.CallbackDataContains("nextPage"))
 	bh.HandleCallbackQuery(handlers.CallbackPrevPage, th.CallbackDataContains("prevPage"))
+	bh.HandleCallbackQuery(handlers.CallbackCancelCat, th.CallbackDataEqual("cancelCat"))
+	bh.HandleCallbackQuery(handlers.CallbackCancel, th.CallbackDataEqual("cancel"))
+	bh.HandleCallbackQuery(handlers.CallbackCategory, th.CallbackDataContains("category"))
 	bh.HandleCallbackQuery(handlers.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
+	bh.HandleCallbackQuery(handlers.CallbackProduct, th.CallbackDataContains("product"))
+	bh.HandleCallbackQuery(handlers.CallbackBuyProduct, th.CallbackDataContains("buyProduct"))
+	bh.HandleCallbackQuery(handlers.CallbackBuy, th.CallbackDataContains("attentionBuy"))
 
 	_ = bh.Start()
 }

@@ -27,7 +27,7 @@ type Product struct {
 	CategoryID  uint   `gorm:"not null"`
 	Name        string `gorm:"not null"`
 	Description string
-	Price       int    `gorm:"not null"`
+	Price       int64  `gorm:"not null"`
 	ImageID     string `gorm:"column:image_id"`
 	Stock       int    `gorm:"default:0"`
 }

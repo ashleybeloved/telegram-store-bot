@@ -2,6 +2,7 @@ package storage
 
 import (
 	"TelegramShop/models"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -98,4 +99,87 @@ func GetCategories(page int) ([]CategoryBrief, error) {
 		Scan(&results).Error
 
 	return results, err
+}
+
+func GetPagesForProducts(catid int) (int, error) {
+	var count int64
+
+	err := DB.Model(&models.Product{}).
+		Where("category_id = ?", catid).
+		Count(&count).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int((count + 5 - 1) / 5), nil
+}
+
+type ProductsBrief struct {
+	ID   int
+	Name string
+}
+
+func GetProducts(page int, cat_id int) ([]ProductsBrief, error) {
+	var results []ProductsBrief
+	pageSize := 5
+	offset := (page - 1) * pageSize
+
+	err := DB.Model(&models.Product{}).
+		Select("id", "name").
+		Where("category_id = ?", cat_id).
+		Limit(pageSize).
+		Offset(offset).
+		Order("id ASC").
+		Scan(&results).Error
+
+	return results, err
+}
+
+func GetProduct(product_id int) (models.Product, error) {
+	var product models.Product
+	err := DB.First(&product, product_id).Error
+	if err != nil {
+		return models.Product{}, err
+	}
+
+	return product, nil
+}
+
+func BuyProduct(userid int64, productid uint) error {
+	return DB.Transaction(func(tx *gorm.DB) error {
+		var user models.User
+		var product models.Product
+
+		if err := tx.Where("user_id = ?", userid).First(&user).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return fmt.Errorf("пользователь не найден")
+			}
+			return err
+		}
+
+		if err := tx.First(&product, productid).Error; err != nil {
+			return err
+		}
+
+		if user.Balance < product.Price {
+			return fmt.Errorf("недостаточно средств")
+		}
+
+		if product.Stock <= 0 {
+			return fmt.Errorf("товара нет в наличии")
+		}
+
+		user.Balance -= product.Price
+		if err := tx.Save(&user).Error; err != nil {
+			return err
+		}
+
+		product.Stock -= 1
+		if err := tx.Save(&product).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

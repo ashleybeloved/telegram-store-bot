@@ -10,7 +10,6 @@ import (
 )
 
 func SendMainMenu(ctx *th.Context, update telego.Update) (err error) {
-	chatID := update.Message.Chat.ID
 	user_id := update.Message.From.ID
 	username := update.Message.From.Username
 	firstname := update.Message.From.FirstName
@@ -26,19 +25,19 @@ func SendMainMenu(ctx *th.Context, update telego.Update) (err error) {
 			tu.KeyboardButton("🛍 Каталог"),
 		),
 		tu.KeyboardRow(
-			tu.KeyboardButton("💳 Пополнить баланс"),
+			tu.KeyboardButton("🛒 Мои покупки"),
 			tu.KeyboardButton("👤 Профиль"),
 		),
 		tu.KeyboardRow(
-			tu.KeyboardButton(""),
+			tu.KeyboardButton("💳 Пополнить баланс"),
 			tu.KeyboardButton("🆘 Поддержка"),
 		),
 	).WithResizeKeyboard()
 
 	msg := tu.Photo(
-		tu.ID(chatID),
+		tu.ID(user_id),
 		tu.FileFromID(photo),
-	).WithCaption(firstname + ", добро пожаловать в <b>heaven.help</b>").WithParseMode(telego.ModeHTML).WithReplyMarkup(keyboard)
+	).WithCaption(firstname + ", добро пожаловать в *heaven.help*").WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendPhoto(ctx, msg)
 
@@ -62,15 +61,15 @@ func SendCatalog(ctx *th.Context, update telego.Update) (err error) {
 
 	for _, cat := range categories {
 		rows = append(rows, tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("cat:%d", cat.ID)),
+			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("category:%d", cat.ID)),
 		))
 	}
 
 	rows = append(rows,
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPage:%d:%d", page-1, pages)),
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPageCat:%d:%d", page-1, pages)),
 			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
-			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPage:%d:%d", page+1, pages)),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPageCat:%d:%d", page+1, pages)),
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
@@ -83,17 +82,6 @@ func SendCatalog(ctx *th.Context, update telego.Update) (err error) {
 		tu.ID(update.Message.Chat.ID),
 		"Выберите категорию товаров:",
 	).WithReplyMarkup(keyboard)
-
-	ctx.Bot().SendMessage(ctx, msg)
-
-	return nil
-}
-
-func SendCart(ctx *th.Context, update telego.Update) (err error) {
-	msg := tu.Message(
-		tu.ID(update.Message.Chat.ID),
-		"Не реализовано =(",
-	)
 
 	ctx.Bot().SendMessage(ctx, msg)
 
