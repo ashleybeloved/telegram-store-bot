@@ -1,4 +1,4 @@
-package handlers
+package callbacks
 
 import (
 	"TelegramShop/storage"
@@ -72,11 +72,11 @@ func CallbackCancel(ctx *th.Context, query telego.CallbackQuery) error {
 			tu.KeyboardButton("🛍 Каталог"),
 		),
 		tu.KeyboardRow(
-			tu.KeyboardButton("💳 Пополнить баланс"),
+			tu.KeyboardButton("🛒 Мои покупки"),
 			tu.KeyboardButton("👤 Профиль"),
 		),
 		tu.KeyboardRow(
-			tu.KeyboardButton(""),
+			tu.KeyboardButton("💳 Пополнить баланс"),
 			tu.KeyboardButton("🆘 Поддержка"),
 		),
 	).WithResizeKeyboard()
@@ -122,16 +122,17 @@ func CallbackPrevPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
 	pageStr := data[1]
 	pagesStr := data[2]
-	pages, _ := strconv.Atoi(pagesStr)
-	page, _ := strconv.Atoi(pageStr)
+	pages, err := strconv.Atoi(pagesStr)
+	if err != nil {
+		return err
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return err
+	}
 
 	if page < 1 {
 		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
-	}
-
-	pages, err := storage.GetPagesForCategories()
-	if err != nil {
-		return err
 	}
 
 	categories, err := storage.GetCategories(page)
@@ -231,6 +232,9 @@ func CallbackCategory(ctx *th.Context, query telego.CallbackQuery) error {
 	cat_id, _ := strconv.Atoi(cat_idStr)
 
 	pages, err := storage.GetPagesForProducts(cat_id)
+	if err != nil {
+		return err
+	}
 
 	products, err := storage.GetProducts(page, cat_id)
 	if err != nil {
@@ -275,16 +279,17 @@ func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
 	pagesStr := data[2]
 	cat_idStr := data[3]
 	cat_id, _ := strconv.Atoi(cat_idStr)
-	pages, _ := strconv.Atoi(pagesStr)
-	page, _ := strconv.Atoi(pageStr)
+	pages, err := strconv.Atoi(pagesStr)
+	if err != nil {
+		return err
+	}
+	page, err := strconv.Atoi(pageStr)
+	if err != nil {
+		return err
+	}
 
 	if page < 1 {
 		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
-	}
-
-	pages, err := storage.GetPagesForProducts(cat_id)
-	if err != nil {
-		return err
 	}
 
 	products, err := storage.GetProducts(page, cat_id)
@@ -326,20 +331,21 @@ func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
 
 func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
-	pageStr := data[1]
-	pagesStr := data[2]
-	cat_idStr := data[3]
-	cat_id, _ := strconv.Atoi(cat_idStr)
-	pages, _ := strconv.Atoi(pagesStr)
-	page, _ := strconv.Atoi(pageStr)
+	cat_id, err := strconv.Atoi(data[3])
+	if err != nil {
+		return err
+	}
+	pages, err := strconv.Atoi(data[2])
+	if err != nil {
+		return err
+	}
+	page, err := strconv.Atoi(data[1])
+	if err != nil {
+		return err
+	}
 
 	if page > pages {
 		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
-	}
-
-	pages, err := storage.GetPagesForProducts(cat_id)
-	if err != nil {
-		return err
 	}
 
 	products, err := storage.GetProducts(page, cat_id)

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"TelegramShop/callbacks"
 	"TelegramShop/handlers"
 	"TelegramShop/storage"
 	"context"
@@ -38,24 +39,29 @@ func main() {
 	bh, _ := th.NewBotHandler(bot, updates)
 	defer func() { _ = bh.Stop() }()
 
+	// Handlers
+
 	bh.Handle(handlers.SendMainMenu, th.CommandEqual("start"))
 
 	bh.Handle(handlers.SendCatalog, th.TextEqual("🛍 Каталог"))
 	bh.Handle(handlers.SendProfile, th.TextEqual("👤 Профиль"))
+	bh.Handle(handlers.SendPurchases, th.TextEqual("🛒 Мои покупки"))
 	bh.Handle(handlers.SendDeposit, th.TextEqual("💳 Пополнить баланс"))
 	bh.Handle(handlers.SendSupport, th.TextEqual("🆘 Поддержка"))
 
-	bh.HandleCallbackQuery(handlers.CallbackNextPageCat, th.CallbackDataContains("nextPageCat"))
-	bh.HandleCallbackQuery(handlers.CallbackPrevPageCat, th.CallbackDataContains("prevPageCat"))
-	bh.HandleCallbackQuery(handlers.CallbackNextPage, th.CallbackDataContains("nextPage"))
-	bh.HandleCallbackQuery(handlers.CallbackPrevPage, th.CallbackDataContains("prevPage"))
-	bh.HandleCallbackQuery(handlers.CallbackCancelCat, th.CallbackDataEqual("cancelCat"))
-	bh.HandleCallbackQuery(handlers.CallbackCancel, th.CallbackDataEqual("cancel"))
-	bh.HandleCallbackQuery(handlers.CallbackCategory, th.CallbackDataContains("category"))
-	bh.HandleCallbackQuery(handlers.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
-	bh.HandleCallbackQuery(handlers.CallbackProduct, th.CallbackDataContains("product"))
-	bh.HandleCallbackQuery(handlers.CallbackBuyProduct, th.CallbackDataContains("buyProduct"))
-	bh.HandleCallbackQuery(handlers.CallbackBuy, th.CallbackDataContains("attentionBuy"))
+	// Callbacks
+
+	bh.HandleCallbackQuery(callbacks.CallbackNextPageCat, th.CallbackDataContains("nextPageCat"))
+	bh.HandleCallbackQuery(callbacks.CallbackPrevPageCat, th.CallbackDataContains("prevPageCat"))
+	bh.HandleCallbackQuery(callbacks.CallbackNextPage, th.CallbackDataContains("nextPage"))
+	bh.HandleCallbackQuery(callbacks.CallbackPrevPage, th.CallbackDataContains("prevPage"))
+	bh.HandleCallbackQuery(callbacks.CallbackCancelCat, th.CallbackDataEqual("cancelCat"))
+	bh.HandleCallbackQuery(callbacks.CallbackCancel, th.CallbackDataEqual("cancel"))
+	bh.HandleCallbackQuery(callbacks.CallbackCategory, th.CallbackDataContains("category"))
+	bh.HandleCallbackQuery(callbacks.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
+	bh.HandleCallbackQuery(callbacks.CallbackProduct, th.CallbackDataContains("product"))
+	bh.HandleCallbackQuery(callbacks.CallbackBuyProduct, th.CallbackDataContains("buyProduct"))
+	bh.HandleCallbackQuery(callbacks.CallbackBuy, th.CallbackDataContains("attentionBuy"))
 
 	_ = bh.Start()
 }

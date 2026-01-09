@@ -146,3 +146,8 @@ func SendSupport(ctx *th.Context, update telego.Update) (err error) {
 
 	return nil
 }
+
+func SendPurchases(ctx *th.Context, update telego.Update) (err error) {
+
+	return nil
+}
