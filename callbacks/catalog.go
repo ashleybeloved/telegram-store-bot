@@ -86,13 +86,11 @@ func CallbackCancel(ctx *th.Context, query telego.CallbackQuery) error {
 
 func CallbackPrevPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
-	pageStr := data[1]
-	pagesStr := data[2]
-	pages, err := strconv.Atoi(pagesStr)
+	pages, err := strconv.Atoi(data[2])
 	if err != nil {
 		return err
 	}
-	page, err := strconv.Atoi(pageStr)
+	page, err := strconv.Atoi(data[1])
 	if err != nil {
 		return err
 	}
@@ -392,7 +390,7 @@ func CallbackBuyProduct(ctx *th.Context, query telego.CallbackQuery) error {
 		return err
 	}
 
-	user, err := storage.FindUser(query.From.ID)
+	user, err := storage.GetUser(query.From.ID)
 	if err != nil {
 		return err
 	}
@@ -430,7 +428,7 @@ func CallbackBuy(ctx *th.Context, query telego.CallbackQuery) error {
 		return err
 	}
 
-	user, err := storage.FindUser(query.From.ID)
+	user, err := storage.GetUser(query.From.ID)
 	if err != nil {
 		return err
 	}

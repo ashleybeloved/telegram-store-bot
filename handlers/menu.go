@@ -13,6 +13,11 @@ import (
 func SendMainMenu(ctx *th.Context, update telego.Update) (err error) {
 	photo := configs.MainMenuPhotoID
 
+	err = storage.SetUserState(update.Message.From.ID, "nothing")
+	if err != nil {
+		return err
+	}
+
 	keyboard := tu.Keyboard(
 		tu.KeyboardRow(
 			tu.KeyboardButton("🛍 Каталог"),
@@ -82,7 +87,7 @@ func SendCatalog(ctx *th.Context, update telego.Update) (err error) {
 }
 
 func SendProfile(ctx *th.Context, update telego.Update) (err error) {
-	user, err := storage.FindUser(update.Message.From.ID)
+	user, err := storage.GetUser(update.Message.From.ID)
 	if err != nil {
 		return err
 	}
@@ -92,18 +97,17 @@ func SendProfile(ctx *th.Context, update telego.Update) (err error) {
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("🔄 Обновить").WithCallbackData("profileRefresh"),
-			tu.InlineKeyboardButton("🎁 Ввести промокод").WithCallbackData("promoCode"),
 		),
 	)
 
 	msg := tu.Message(
 		tu.ID(chatID),
-		fmt.Sprintf("<b>Профиль %s:</b>\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
+		fmt.Sprintf("**Профиль %s:**\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
 			user.Firstname,
 			user.ID,
 			user.LangCode,
 			user.Balance,
-			user.Role)).WithParseMode(telego.ModeHTML).WithReplyMarkup(keyboard)
+			user.Role)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendMessage(ctx, msg)
 
@@ -111,10 +115,16 @@ func SendProfile(ctx *th.Context, update telego.Update) (err error) {
 }
 
 func SendDeposit(ctx *th.Context, update telego.Update) (err error) {
+	keyboard := tu.InlineKeyboard(
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("🎁 Промокод").WithCallbackData("promoCode"),
+		),
+	)
+
 	msg := tu.Message(
 		tu.ID(update.Message.Chat.ID),
-		"Не реализовано =(",
-	)
+		"Пополнение баланса доступно через методы ниже:",
+	).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendMessage(ctx, msg)
 

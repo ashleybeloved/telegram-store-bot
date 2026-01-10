@@ -40,7 +40,7 @@ func main() {
 	bh, _ := th.NewBotHandler(bot, updates)
 	defer func() { _ = bh.Stop() }()
 
-	// Middleware
+	// User Middleware (adds to DB if not exists and checks state)
 
 	bh.Use(middleware.UserMiddleware)
 
@@ -69,6 +69,7 @@ func main() {
 
 	bh.HandleCallbackQuery(callbacks.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
 	bh.HandleCallbackQuery(callbacks.CallbackPromoCode, th.CallbackDataEqual("promoCode"))
+	bh.HandleCallbackQuery(callbacks.CallbackCancelPromocode, th.CallbackDataEqual("cancelPromocode"))
 
 	log.Println("Bot started")
 

@@ -10,19 +10,13 @@ import (
 )
 
 func CallbackRefreshProfile(ctx *th.Context, query telego.CallbackQuery) error {
-	chatID := query.From.ID
-	username := query.From.Username
-	firstname := query.From.FirstName
-	lastname := query.From.LastName
-	lang_code := query.From.LanguageCode
-
-	user, err := storage.RefreshUser(chatID, username, firstname, lastname, lang_code)
+	user, err := storage.RefreshUser(query.From.ID, query.From.Username, query.From.FirstName, query.From.LastName, query.From.LanguageCode)
 	if err != nil {
 		return err
 	}
 
 	editMsg := tu.EditMessageText(
-		tu.ID(chatID),
+		tu.ID(query.From.ID),
 		query.Message.Message().MessageID,
 		fmt.Sprintf("*Профиль %s:*\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
 			user.Firstname,
@@ -34,8 +28,4 @@ func CallbackRefreshProfile(ctx *th.Context, query telego.CallbackQuery) error {
 	ctx.Bot().EditMessageText(ctx, editMsg)
 
 	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Обновлено!"))
-}
-
-func CallbackPromoCode(ctx *th.Context, query telego.CallbackQuery) error {
-	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Функция в разработке!"))
 }
