@@ -9,7 +9,7 @@ import (
 func CallbackAdminMenu(ctx *th.Context, query telego.CallbackQuery) error {
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("📦 Управление товарами").WithCallbackData("manageProducts"),
+			tu.InlineKeyboardButton("📦 Управление каталогом").WithCallbackData("manageCatalog"),
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("🎟 Управление промокодами").WithCallbackData("managePromocodes"),

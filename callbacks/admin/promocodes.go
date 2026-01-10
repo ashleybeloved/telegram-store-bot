@@ -73,6 +73,13 @@ func CallbackAllpromocodes(ctx *th.Context, query telego.CallbackQuery) error {
 
 	var rows [][]telego.InlineKeyboardButton
 
+	if pages == 0 {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("Промокодов нет").WithCallbackData(" "),
+		))
+		pages = 1
+	}
+
 	for _, promocode := range promocodes {
 		rows = append(rows, tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton(promocode.Code).WithCallbackData(fmt.Sprintf("promocodeAdmin:%d", promocode.ID)),
@@ -226,7 +233,7 @@ func CallbackPromocodeAdmin(ctx *th.Context, query telego.CallbackQuery) error {
 
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("🗑️ Удалить").WithCallbackData(fmt.Sprint("delPromocode:", promocode.ID)),
+			tu.InlineKeyboardButton("🗑️ Удалить").WithCallbackData(fmt.Sprint("deletePromocode:", promocode.ID)),
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("allPromocodes"),

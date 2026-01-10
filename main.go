@@ -76,6 +76,7 @@ func main() {
 
 	bh.Use(middleware.AdminMiddleware)
 
+	bh.HandleCallbackQuery(adminCallbacks.CallbackAdminMenu, th.CallbackDataEqual("adminMenu"))
 	bh.HandleCallbackQuery(adminCallbacks.CallbackManagePromocodes, th.CallbackDataEqual("managePromocodes"))
 	bh.HandleCallbackQuery(adminCallbacks.CallbackCreatePromocode, th.CallbackDataEqual("createPromocode"))
 	bh.HandleCallbackQuery(adminCallbacks.CallbackAllpromocodes, th.CallbackDataEqual("allPromocodes"))

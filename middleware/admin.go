@@ -87,10 +87,16 @@ func AdminMiddleware(ctx *th.Context, update telego.Update) error {
 
 			storage.SetUserState(userid, "nothing")
 
+			keyboard := tu.InlineKeyboard(
+				tu.InlineKeyboardRow(
+					tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("managePromocodes"),
+				),
+			)
+
 			msg := tu.Message(
 				tu.ID(userid),
-				fmt.Sprintf("🎟 Вы успешно создали промокод *%s*, на *%v₽*, на %v использований.\n\nИстечёт: *%v*", code, reward, maxUses, expiresAt),
-			).WithParseMode(telego.ModeMarkdown)
+				fmt.Sprintf("🎟 Вы успешно создали промокод *%s*, на *%v₽*, на %v использований.\n\nИстечёт: *%v*", code, reward, maxUses, expiresAt.Format("02 Jan 2006 15:04")),
+			).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 			ctx.Bot().SendMessage(ctx, msg)
 		}

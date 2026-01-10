@@ -57,6 +57,13 @@ func SendCatalog(ctx *th.Context, update telego.Update) (err error) {
 
 	var rows [][]telego.InlineKeyboardButton
 
+	if pages == 0 {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("Товаров нет").WithCallbackData(" "),
+		))
+		pages = 1
+	}
+
 	for _, cat := range categories {
 		rows = append(rows, tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton(cat.Name).WithCallbackData(fmt.Sprintf("category:%d", cat.ID)),
