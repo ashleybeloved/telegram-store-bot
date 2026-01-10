@@ -75,6 +75,9 @@ func main() {
 
 	bh.Use(middleware.AdminMiddleware)
 
+	bh.HandleCallbackQuery(callbacks.CallbackManagePromocodes, th.CallbackDataEqual("managePromocodes"))
+	bh.HandleCallbackQuery(callbacks.CallbackCreatePromocode, th.CallbackDataEqual("createPromocode"))
+
 	bh.Handle(handlers.SendAdminMenu, th.CommandEqual("admin"))
 
 	log.Println("Bot started")

@@ -231,6 +231,7 @@ func NewPromocode(code string, reward int64, maxUses int, expiresAt time.Time) e
 		Code:      code,
 		Reward:    reward,
 		MaxUses:   maxUses,
+		UsesLeft:  maxUses,
 		ExpiresAt: expiresAt,
 	}
 

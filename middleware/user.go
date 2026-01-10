@@ -3,7 +3,6 @@ package middleware
 import (
 	"TelegramShop/storage"
 	"fmt"
-	"os"
 
 	"github.com/mymmrac/telego"
 	th "github.com/mymmrac/telego/telegohandler"
@@ -70,6 +69,7 @@ func UserMiddleware(ctx *th.Context, update telego.Update) error {
 			}
 
 			storage.SetUserState(userid, "nothing")
+
 			msg := tu.Message(
 				tu.ID(update.Message.From.ID),
 				fmt.Sprintf("Вы успешно активировали промокод %s, на %v₽", update.Message.Text, reward),
@@ -77,30 +77,9 @@ func UserMiddleware(ctx *th.Context, update telego.Update) error {
 
 			ctx.Bot().SendMessage(ctx, msg)
 		}
+	default:
+		return ctx.Next(update)
 	}
 
 	return nil
-}
-
-func AdminMiddleware(ctx *th.Context, update telego.Update) error {
-	var userid int64
-	adminid := os.Getenv("ADMIN_ID")
-
-	if update.CallbackQuery != nil {
-		userid = update.CallbackQuery.From.ID
-	} else if update.Message != nil {
-		userid = update.Message.From.ID
-	} else {
-		return nil
-	}
-
-	if fmt.Sprint(userid) != adminid {
-		ctx.Bot().SendMessage(ctx, tu.Message(
-			tu.ID(userid),
-			"Вы не являетесь администратором бота.",
-		))
-		return nil
-	}
-
-	return ctx.Next(update)
 }
