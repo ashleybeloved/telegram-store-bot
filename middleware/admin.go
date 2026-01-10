@@ -89,7 +89,7 @@ func AdminMiddleware(ctx *th.Context, update telego.Update) error {
 
 			msg := tu.Message(
 				tu.ID(userid),
-				fmt.Sprintf("Вы успешно создали промокод *%s*, на *%v₽*, на %v использований.\n\nИстечёт: *%v*", code, reward, maxUses, expiresAt),
+				fmt.Sprintf("🎟 Вы успешно создали промокод *%s*, на *%v₽*, на %v использований.\n\nИстечёт: *%v*", code, reward, maxUses, expiresAt),
 			).WithParseMode(telego.ModeMarkdown)
 
 			ctx.Bot().SendMessage(ctx, msg)

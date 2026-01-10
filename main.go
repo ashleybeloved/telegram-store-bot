@@ -1,7 +1,8 @@
 package main
 
 import (
-	"TelegramShop/callbacks"
+	adminCallbacks "TelegramShop/callbacks/admin"
+	callbacks "TelegramShop/callbacks/user"
 	"TelegramShop/handlers"
 	"TelegramShop/middleware"
 	"TelegramShop/storage"
@@ -56,14 +57,14 @@ func main() {
 
 	// Callbacks
 
-	bh.HandleCallbackQuery(callbacks.CallbackNextPageCat, th.CallbackDataContains("nextPageCat"))
-	bh.HandleCallbackQuery(callbacks.CallbackPrevPageCat, th.CallbackDataContains("prevPageCat"))
-	bh.HandleCallbackQuery(callbacks.CallbackNextPage, th.CallbackDataContains("nextPage"))
-	bh.HandleCallbackQuery(callbacks.CallbackPrevPage, th.CallbackDataContains("prevPage"))
-	bh.HandleCallbackQuery(callbacks.CallbackCategory, th.CallbackDataContains("category"))
-	bh.HandleCallbackQuery(callbacks.CallbackProduct, th.CallbackDataContains("product"))
-	bh.HandleCallbackQuery(callbacks.CallbackBuyProduct, th.CallbackDataContains("buyProduct"))
-	bh.HandleCallbackQuery(callbacks.CallbackBuy, th.CallbackDataContains("attentionBuy"))
+	bh.HandleCallbackQuery(callbacks.CallbackNextPageCat, th.CallbackDataContains("nextPageCat:"))
+	bh.HandleCallbackQuery(callbacks.CallbackPrevPageCat, th.CallbackDataContains("prevPageCat:"))
+	bh.HandleCallbackQuery(callbacks.CallbackNextPage, th.CallbackDataContains("nextPage:"))
+	bh.HandleCallbackQuery(callbacks.CallbackPrevPage, th.CallbackDataContains("prevPage:"))
+	bh.HandleCallbackQuery(callbacks.CallbackCategory, th.CallbackDataContains("category:"))
+	bh.HandleCallbackQuery(callbacks.CallbackProduct, th.CallbackDataContains("product:"))
+	bh.HandleCallbackQuery(callbacks.CallbackBuyProduct, th.CallbackDataContains("buyProduct:"))
+	bh.HandleCallbackQuery(callbacks.CallbackBuy, th.CallbackDataContains("attentionBuy:"))
 	bh.HandleCallbackQuery(callbacks.CallbackCancelCat, th.CallbackDataEqual("cancelCat"))
 	bh.HandleCallbackQuery(callbacks.CallbackCancel, th.CallbackDataEqual("cancel"))
 
@@ -75,8 +76,13 @@ func main() {
 
 	bh.Use(middleware.AdminMiddleware)
 
-	bh.HandleCallbackQuery(callbacks.CallbackManagePromocodes, th.CallbackDataEqual("managePromocodes"))
-	bh.HandleCallbackQuery(callbacks.CallbackCreatePromocode, th.CallbackDataEqual("createPromocode"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackManagePromocodes, th.CallbackDataEqual("managePromocodes"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackCreatePromocode, th.CallbackDataEqual("createPromocode"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackAllpromocodes, th.CallbackDataEqual("allPromocodes"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackNextPagePromocode, th.CallbackDataContains("nextPagePromocode:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackPrevPagePromocode, th.CallbackDataContains("prevPagePromocode:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackPromocodeAdmin, th.CallbackDataContains("promocodeAdmin:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackDeletePromocode, th.CallbackDataContains("deletePromocode:"))
 
 	bh.Handle(handlers.SendAdminMenu, th.CommandEqual("admin"))
 

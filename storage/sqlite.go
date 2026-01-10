@@ -218,12 +218,40 @@ func GetPurchaseHistory(userid int64) ([]models.PurchasesHistory, error) {
 	return history, nil
 }
 
+func GetPagesForPurchasesHistory(userid int64) (int, error) {
+	var count int64
+
+	err := DB.Model(&models.PurchasesHistory{}).
+		Where("user_id = ?", userid).
+		Count(&count).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int((count + 5 - 1) / 5), nil
+}
+
 func SetUserState(userid int64, state string) error {
 	return DB.Model(&models.User{}).Where("user_id = ?", userid).Update("state", state).Error
 }
 
 func AddBalance(userid int64, amount int64) error {
 	return DB.Model(&models.User{}).Where("user_id = ?", userid).Update("balance", gorm.Expr("balance + ?", amount)).Error
+}
+
+func GetPromocodes(page int) ([]models.Promocode, error) {
+	var promocodes []models.Promocode
+	pageSize := 5
+	offset := (page - 1) * pageSize
+
+	err := DB.Model(&models.Promocode{}).
+		Limit(pageSize).
+		Offset(offset).
+		Order("id ASC").
+		Find(&promocodes).Error
+
+	return promocodes, err
 }
 
 func NewPromocode(code string, reward int64, maxUses int, expiresAt time.Time) error {
@@ -272,4 +300,31 @@ func RedeemPromocode(userid int64, code string) (int64, error) {
 	})
 
 	return promocode.Reward, err
+}
+
+func GetPagesForPromocodes() (int, error) {
+	var count int64
+
+	err := DB.Model(&models.Promocode{}).
+		Count(&count).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int((count + 5 - 1) / 5), nil
+}
+
+func GetPromocode(promocode_id int) (models.Promocode, error) {
+	var promocode models.Promocode
+	err := DB.First(&promocode, promocode_id).Error
+	if err != nil {
+		return models.Promocode{}, err
+	}
+
+	return promocode, nil
+}
+
+func DeletePromocode(promocode_id int) error {
+	return DB.Delete(&models.Promocode{}, promocode_id).Error
 }
