@@ -22,7 +22,7 @@ func CallbackPromoCode(ctx *th.Context, query telego.CallbackQuery) error {
 
 	msg := tu.Message(
 		tu.ID(query.From.ID),
-		"🎁 Введите промокод для активации:",
+		"🎟 Введите промокод для активации:",
 	).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendMessage(ctx, msg)
@@ -33,7 +33,7 @@ func CallbackPromoCode(ctx *th.Context, query telego.CallbackQuery) error {
 func CallbackCancelPromocode(ctx *th.Context, query telego.CallbackQuery) error {
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("🎁 Промокод").WithCallbackData("promoCode"),
+			tu.InlineKeyboardButton("🎟 Промокод").WithCallbackData("promoCode"),
 		),
 	)
 
