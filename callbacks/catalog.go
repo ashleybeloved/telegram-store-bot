@@ -1,6 +1,7 @@
 package callbacks
 
 import (
+	"TelegramShop/configs"
 	"TelegramShop/storage"
 	"fmt"
 	"strconv"
@@ -57,15 +58,7 @@ func CallbackCancelCat(ctx *th.Context, query telego.CallbackQuery) error {
 }
 
 func CallbackCancel(ctx *th.Context, query telego.CallbackQuery) error {
-	user_id := query.From.ID
-	username := query.From.Username
-	firstname := query.From.FirstName
-	lastname := query.From.LastName
-	lang_code := query.From.LanguageCode
-
-	storage.AddUser(user_id, username, firstname, lastname, lang_code)
-
-	photo := "AgACAgIAAxkBAAPGaV6tpwnR1_akAyzb6MH26kzBpNgAAkgTaxuV-fBKuPW7m2HJYfIBAAMCAAN5AAM4BA"
+	photo := configs.MainMenuPhotoID
 
 	keyboard := tu.Keyboard(
 		tu.KeyboardRow(
@@ -82,9 +75,9 @@ func CallbackCancel(ctx *th.Context, query telego.CallbackQuery) error {
 	).WithResizeKeyboard()
 
 	msg := tu.Photo(
-		tu.ID(user_id),
+		tu.ID(query.From.ID),
 		tu.FileFromID(photo),
-	).WithCaption(firstname + ", добро пожаловать в *heaven.help*").WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+	).WithCaption(query.From.FirstName + ", добро пожаловать в *heaven.help*").WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendPhoto(ctx, msg)
 
@@ -147,10 +140,8 @@ func CallbackPrevPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 
 func CallbackNextPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
-	pageStr := data[1]
-	pagesStr := data[2]
-	pages, _ := strconv.Atoi(pagesStr)
-	page, _ := strconv.Atoi(pageStr)
+	pages, _ := strconv.Atoi(data[2])
+	page, _ := strconv.Atoi(data[1])
 
 	if page > pages {
 		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Несуществующая страница"))
@@ -201,8 +192,7 @@ func CallbackNextPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 func CallbackCategory(ctx *th.Context, query telego.CallbackQuery) error {
 	page := 1
 	data := strings.Split(query.Data, ":")
-	cat_idStr := data[1]
-	cat_id, _ := strconv.Atoi(cat_idStr)
+	cat_id, _ := strconv.Atoi(data[1])
 
 	pages, err := storage.GetPagesForProducts(cat_id)
 	if err != nil {
@@ -248,15 +238,17 @@ func CallbackCategory(ctx *th.Context, query telego.CallbackQuery) error {
 
 func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
-	pageStr := data[1]
-	pagesStr := data[2]
-	cat_idStr := data[3]
-	cat_id, _ := strconv.Atoi(cat_idStr)
-	pages, err := strconv.Atoi(pagesStr)
+	cat_id, err := strconv.Atoi(data[3])
 	if err != nil {
 		return err
 	}
-	page, err := strconv.Atoi(pageStr)
+
+	pages, err := strconv.Atoi(data[2])
+	if err != nil {
+		return err
+	}
+
+	page, err := strconv.Atoi(data[1])
 	if err != nil {
 		return err
 	}
@@ -308,10 +300,12 @@ func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
 	if err != nil {
 		return err
 	}
+
 	pages, err := strconv.Atoi(data[2])
 	if err != nil {
 		return err
 	}
+
 	page, err := strconv.Atoi(data[1])
 	if err != nil {
 		return err
@@ -360,8 +354,10 @@ func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
 
 func CallbackProduct(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
-	product_idStr := data[1]
-	product_id, _ := strconv.Atoi(product_idStr)
+	product_id, err := strconv.Atoi(data[1])
+	if err != nil {
+		return err
+	}
 
 	product, err := storage.GetProduct(product_id)
 	if err != nil {
@@ -391,8 +387,10 @@ func CallbackProduct(ctx *th.Context, query telego.CallbackQuery) error {
 
 func CallbackBuyProduct(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
-	product_idStr := data[1]
-	product_id, _ := strconv.Atoi(product_idStr)
+	product_id, err := strconv.Atoi(data[1])
+	if err != nil {
+		return err
+	}
 
 	user, err := storage.FindUser(query.From.ID)
 	if err != nil {
@@ -427,8 +425,10 @@ func CallbackBuyProduct(ctx *th.Context, query telego.CallbackQuery) error {
 
 func CallbackBuy(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
-	product_idStr := data[1]
-	product_id, _ := strconv.Atoi(product_idStr)
+	product_id, err := strconv.Atoi(data[1])
+	if err != nil {
+		return err
+	}
 
 	user, err := storage.FindUser(query.From.ID)
 	if err != nil {

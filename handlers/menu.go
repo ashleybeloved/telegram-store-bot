@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"TelegramShop/configs"
 	"TelegramShop/storage"
 	"fmt"
 
@@ -10,15 +11,7 @@ import (
 )
 
 func SendMainMenu(ctx *th.Context, update telego.Update) (err error) {
-	user_id := update.Message.From.ID
-	username := update.Message.From.Username
-	firstname := update.Message.From.FirstName
-	lastname := update.Message.From.LastName
-	lang_code := update.Message.From.LanguageCode
-
-	storage.AddUser(user_id, username, firstname, lastname, lang_code)
-
-	photo := "AgACAgIAAxkBAAPGaV6tpwnR1_akAyzb6MH26kzBpNgAAkgTaxuV-fBKuPW7m2HJYfIBAAMCAAN5AAM4BA"
+	photo := configs.MainMenuPhotoID
 
 	keyboard := tu.Keyboard(
 		tu.KeyboardRow(
@@ -35,9 +28,9 @@ func SendMainMenu(ctx *th.Context, update telego.Update) (err error) {
 	).WithResizeKeyboard()
 
 	msg := tu.Photo(
-		tu.ID(user_id),
+		tu.ID(update.Message.From.ID),
 		tu.FileFromID(photo),
-	).WithCaption(firstname + ", добро пожаловать в *heaven.help*").WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+	).WithCaption(update.Message.From.FirstName + ", добро пожаловать в *heaven.help*").WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendPhoto(ctx, msg)
 
@@ -130,7 +123,7 @@ func SendDeposit(ctx *th.Context, update telego.Update) (err error) {
 
 func SendSupport(ctx *th.Context, update telego.Update) (err error) {
 	chatID := update.Message.Chat.ID
-	photo := "AgACAgIAAxkBAAPGaV6tpwnR1_akAyzb6MH26kzBpNgAAkgTaxuV-fBKuPW7m2HJYfIBAAMCAAN5AAM4BA"
+	photo := configs.SupportPhotoID
 
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(

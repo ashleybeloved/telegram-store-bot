@@ -13,3 +13,4 @@
 - [ ] Referral system
 - [ ] Bulk purchasing (buy multiple units in one click)
 - [ ] "Notify when in stock" feature for out-of-stock items
+- [ ] Caching

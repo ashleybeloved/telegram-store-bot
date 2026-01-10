@@ -3,6 +3,7 @@ package main
 import (
 	"TelegramShop/callbacks"
 	"TelegramShop/handlers"
+	"TelegramShop/middleware"
 	"TelegramShop/storage"
 	"context"
 	"fmt"
@@ -38,6 +39,10 @@ func main() {
 
 	bh, _ := th.NewBotHandler(bot, updates)
 	defer func() { _ = bh.Stop() }()
+
+	// Middleware
+
+	bh.Use(middleware.UserMiddleware)
 
 	// Handlers
 
