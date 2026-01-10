@@ -91,33 +91,6 @@ func CallbackCancel(ctx *th.Context, query telego.CallbackQuery) error {
 	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID))
 }
 
-func CallbackRefreshProfile(ctx *th.Context, query telego.CallbackQuery) error {
-	chatID := query.From.ID
-	username := query.From.Username
-	firstname := query.From.FirstName
-	lastname := query.From.LastName
-	lang_code := query.From.LanguageCode
-
-	user, err := storage.RefreshUser(chatID, username, firstname, lastname, lang_code)
-	if err != nil {
-		return err
-	}
-
-	editMsg := tu.EditMessageText(
-		tu.ID(chatID),
-		query.Message.Message().MessageID,
-		fmt.Sprintf("*Профиль %s:*\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
-			user.Firstname,
-			user.ID,
-			user.LangCode,
-			user.Balance,
-			user.Role)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(query.Message.Message().ReplyMarkup)
-
-	ctx.Bot().EditMessageText(ctx, editMsg)
-
-	return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText("Обновлено!"))
-}
-
 func CallbackPrevPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 	data := strings.Split(query.Data, ":")
 	pageStr := data[1]
@@ -467,7 +440,7 @@ func CallbackBuy(ctx *th.Context, query telego.CallbackQuery) error {
 		return err
 	}
 
-	err = storage.BuyProduct(user.UserID, product.ID)
+	itemData, err := storage.BuyProduct(user.UserID, product.ID)
 	if err != nil {
 		return ctx.Bot().AnswerCallbackQuery(ctx, tu.CallbackQuery(query.ID).WithText(fmt.Sprint(err)))
 	}
@@ -485,7 +458,7 @@ func CallbackBuy(ctx *th.Context, query telego.CallbackQuery) error {
 	editMsg := tu.EditMessageText(
 		tu.ID(query.From.ID),
 		query.Message.Message().MessageID,
-		fmt.Sprintf("Вы успешно приобрели: *%s*", product.Name),
+		fmt.Sprintf("Вы успешно приобрели: *%s*\n\nДанные приложенные к товару: %s", product.Name, itemData),
 	).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().EditMessageText(ctx, editMsg)

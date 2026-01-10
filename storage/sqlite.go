@@ -2,7 +2,6 @@ package storage
 
 import (
 	"TelegramShop/models"
-	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -146,28 +145,28 @@ func GetProduct(product_id int) (models.Product, error) {
 	return product, nil
 }
 
-func BuyProduct(userid int64, productid uint) error {
-	return DB.Transaction(func(tx *gorm.DB) error {
+func BuyProduct(userid int64, productid uint) (string, error) {
+	var soldData string
+
+	err := DB.Transaction(func(tx *gorm.DB) error {
 		var user models.User
 		var product models.Product
+		var item models.Item
 
 		if err := tx.Where("user_id = ?", userid).First(&user).Error; err != nil {
-			if errors.Is(err, gorm.ErrRecordNotFound) {
-				return fmt.Errorf("пользователь не найден")
-			}
-			return err
+			return fmt.Errorf("пользователь не найден")
 		}
 
 		if err := tx.First(&product, productid).Error; err != nil {
-			return err
+			return fmt.Errorf("товар не найден")
 		}
 
 		if user.Balance < product.Price {
-			return fmt.Errorf("недостаточно средств")
+			return fmt.Errorf("недостаточно средств (нужно %d, у вас %d)", product.Price, user.Balance)
 		}
 
-		if product.Stock <= 0 {
-			return fmt.Errorf("товара нет в наличии")
+		if err := tx.Where("product_id = ? AND is_sold = ?", productid, false).First(&item).Error; err != nil {
+			return fmt.Errorf("товара нет в наличии (все продано)")
 		}
 
 		user.Balance -= product.Price
@@ -175,11 +174,34 @@ func BuyProduct(userid int64, productid uint) error {
 			return err
 		}
 
-		product.Stock -= 1
-		if err := tx.Save(&product).Error; err != nil {
+		item.IsSold = true
+		if err := tx.Save(&item).Error; err != nil {
+			return err
+		}
+
+		soldData = item.Data
+
+		err := AddPurchaseToPurchaseHistory(tx, userid, product, item.Data, item.ID)
+		if err != nil {
 			return err
 		}
 
 		return nil
 	})
+
+	return soldData, err
+}
+
+func AddPurchaseToPurchaseHistory(tx *gorm.DB, userid int64, product models.Product, itemData string, itemid uint) error {
+	purchase := models.PurchasesHistory{
+		UserID:      userid,
+		ItemID:      itemid,
+		ProductID:   product.ID,
+		Name:        product.Name,
+		Description: product.Description,
+		Price:       product.Price,
+		Data:        itemData,
+	}
+
+	return tx.Create(&purchase).Error
 }

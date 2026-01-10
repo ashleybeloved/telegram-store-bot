@@ -99,6 +99,7 @@ func SendProfile(ctx *th.Context, update telego.Update) (err error) {
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("🔄 Обновить").WithCallbackData("profileRefresh"),
+			tu.InlineKeyboardButton("🎁 Ввести промокод").WithCallbackData("promoCode"),
 		),
 	)
 

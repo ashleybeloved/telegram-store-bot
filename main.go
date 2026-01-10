@@ -55,13 +55,17 @@ func main() {
 	bh.HandleCallbackQuery(callbacks.CallbackPrevPageCat, th.CallbackDataContains("prevPageCat"))
 	bh.HandleCallbackQuery(callbacks.CallbackNextPage, th.CallbackDataContains("nextPage"))
 	bh.HandleCallbackQuery(callbacks.CallbackPrevPage, th.CallbackDataContains("prevPage"))
-	bh.HandleCallbackQuery(callbacks.CallbackCancelCat, th.CallbackDataEqual("cancelCat"))
-	bh.HandleCallbackQuery(callbacks.CallbackCancel, th.CallbackDataEqual("cancel"))
 	bh.HandleCallbackQuery(callbacks.CallbackCategory, th.CallbackDataContains("category"))
-	bh.HandleCallbackQuery(callbacks.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
 	bh.HandleCallbackQuery(callbacks.CallbackProduct, th.CallbackDataContains("product"))
 	bh.HandleCallbackQuery(callbacks.CallbackBuyProduct, th.CallbackDataContains("buyProduct"))
 	bh.HandleCallbackQuery(callbacks.CallbackBuy, th.CallbackDataContains("attentionBuy"))
+	bh.HandleCallbackQuery(callbacks.CallbackCancelCat, th.CallbackDataEqual("cancelCat"))
+	bh.HandleCallbackQuery(callbacks.CallbackCancel, th.CallbackDataEqual("cancel"))
+
+	bh.HandleCallbackQuery(callbacks.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
+	bh.HandleCallbackQuery(callbacks.CallbackPromoCode, th.CallbackDataEqual("promoCode"))
+
+	log.Println("Bot started")
 
 	_ = bh.Start()
 }
