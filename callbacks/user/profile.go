@@ -18,12 +18,11 @@ func CallbackRefreshProfile(ctx *th.Context, query telego.CallbackQuery) error {
 	editMsg := tu.EditMessageText(
 		tu.ID(query.From.ID),
 		query.Message.Message().MessageID,
-		fmt.Sprintf("*Профиль %s:*\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
+		fmt.Sprintf("*Профиль %s:*\n\nID: %d\nЯзык: %s\nБаланс: %d₽\n",
 			user.Firstname,
 			user.ID,
 			user.LangCode,
-			user.Balance,
-			user.Role)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(query.Message.Message().ReplyMarkup)
+			user.Balance)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(query.Message.Message().ReplyMarkup)
 
 	ctx.Bot().EditMessageText(ctx, editMsg)
 

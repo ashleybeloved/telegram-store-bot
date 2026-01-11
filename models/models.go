@@ -10,7 +10,6 @@ type User struct {
 	Lastname  string
 	Balance   int64     `gorm:"default:0"`
 	LangCode  string    `gorm:"column:language_code;default:'ru'"`
-	Role      string    `gorm:"default:'user'"`
 	State     string    `gorm:"default:'nothing'"`
 	CreatedAt time.Time `gorm:"autoCreateTime"`
 	UpdatedAt time.Time
