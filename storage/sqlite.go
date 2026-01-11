@@ -113,6 +113,17 @@ func GetCategories(page int) ([]CategoryBrief, error) {
 	return results, err
 }
 
+func GetCategory(catid int) (models.Category, error) {
+	var category models.Category
+
+	err := DB.First(&category, catid).Error
+	if err != nil {
+		return models.Category{}, err
+	}
+
+	return category, nil
+}
+
 func GetPagesForProducts(catid int) (int, error) {
 	var count int64
 

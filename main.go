@@ -85,6 +85,14 @@ func main() {
 	bh.HandleCallbackQuery(adminCallbacks.CallbackPromocodeAdmin, th.CallbackDataContains("promocodeAdmin:"))
 	bh.HandleCallbackQuery(adminCallbacks.CallbackDeletePromocode, th.CallbackDataContains("deletePromocode:"))
 
+	bh.HandleCallbackQuery(adminCallbacks.CallbackManageCatalog, th.CallbackDataContains("manageCatalog"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackManageCategories, th.CallbackDataContains("manageCategories"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackNextPageCat, th.CallbackDataContains("nextPageCat:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackPrevPageCat, th.CallbackDataContains("prevPageCat:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackCategoryEdit, th.CallbackDataContains("categoryEdit:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackCategoryDelete, th.CallbackDataContains("categoryDelete:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackCategoryCreate, th.CallbackDataContains("categoryCreate"))
+
 	bh.Handle(handlers.SendAdminMenu, th.CommandEqual("admin"))
 
 	log.Println("Bot started")

@@ -29,7 +29,7 @@ func CallbackCancelCat(ctx *th.Context, query telego.CallbackQuery) error {
 
 	if pages == 0 {
 		rows = append(rows, tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("Товаров нет").WithCallbackData(" "),
+			tu.InlineKeyboardButton("Категорий нет").WithCallbackData(" "),
 		))
 		pages = 1
 	}
@@ -210,6 +210,13 @@ func CallbackCategory(ctx *th.Context, query telego.CallbackQuery) error {
 	}
 
 	var rows [][]telego.InlineKeyboardButton
+
+	if pages == 0 {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("Товаров нет").WithCallbackData(" "),
+		))
+		pages = 1
+	}
 
 	for _, product := range products {
 		rows = append(rows, tu.InlineKeyboardRow(

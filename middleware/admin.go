@@ -26,10 +26,19 @@ func AdminMiddleware(ctx *th.Context, update telego.Update) error {
 	}
 
 	if fmt.Sprint(userid) != adminid {
-		ctx.Bot().SendMessage(ctx, tu.Message(
-			tu.ID(userid),
-			"Вы не являетесь администратором бота.",
-		))
+		if update.CallbackQuery != nil {
+			return nil
+		}
+
+		if update.Message.Text == "/admin" {
+			ctx.Bot().SendMessage(ctx, tu.Message(
+				tu.ID(userid),
+				"Вы не являетесь администратором бота.",
+			))
+
+			return nil
+		}
+
 		return nil
 	}
 
@@ -96,6 +105,38 @@ func AdminMiddleware(ctx *th.Context, update telego.Update) error {
 			msg := tu.Message(
 				tu.ID(userid),
 				fmt.Sprintf("🎟 Вы успешно создали промокод *%s*, на *%v₽*, на %v использований.\n\nИстечёт: *%v*", code, reward, maxUses, expiresAt.Format("02 Jan 2006 15:04")),
+			).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+
+			ctx.Bot().SendMessage(ctx, msg)
+		}
+
+	case "awaiting_create_category":
+		if update.CallbackQuery != nil {
+			if update.CallbackQuery.Data == "manageCategories" {
+				storage.SetUserState(userid, "nothing")
+				return ctx.Next(update)
+			}
+
+			return nil
+		}
+
+		if update.Message.Text != "" && update.Message != nil {
+			err := storage.AddCategory(update.Message.Text)
+			if err != nil {
+				return err
+			}
+
+			storage.SetUserState(userid, "nothing")
+
+			keyboard := tu.InlineKeyboard(
+				tu.InlineKeyboardRow(
+					tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("manageCategories"),
+				),
+			)
+
+			msg := tu.Message(
+				tu.ID(userid),
+				fmt.Sprintf("🎟 Вы успешно создали категорию *%s*", update.Message.Text),
 			).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 			ctx.Bot().SendMessage(ctx, msg)

@@ -10,7 +10,7 @@ import (
 func SendAdminMenu(ctx *th.Context, update telego.Update) error {
 	keyboard := tu.InlineKeyboard(
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("📦 Управление товарами").WithCallbackData("manageProducts"),
+			tu.InlineKeyboardButton("📦 Управление каталогом").WithCallbackData("manageCatalog"),
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("🎟 Управление промокодами").WithCallbackData("managePromocodes"),
