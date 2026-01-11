@@ -109,7 +109,7 @@ func SendProfile(ctx *th.Context, update telego.Update) (err error) {
 
 	msg := tu.Message(
 		tu.ID(chatID),
-		fmt.Sprintf("**Профиль %s:**\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
+		fmt.Sprintf("*Профиль %s:*\n\nID: %d\nЯзык: %s\nБаланс: %d₽\nРоль: %s",
 			user.Firstname,
 			user.ID,
 			user.LangCode,

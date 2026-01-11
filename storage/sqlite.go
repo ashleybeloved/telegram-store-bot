@@ -86,6 +86,18 @@ type CategoryBrief struct {
 	Name string
 }
 
+func AddCategory(catname string) error {
+	user := models.Category{
+		Name: catname,
+	}
+
+	return DB.Where(models.Category{Name: catname}).FirstOrCreate(&user).Error
+}
+
+func DelCategory(catid int) error {
+	return DB.Delete(&models.Category{}, catid).Error
+}
+
 func GetCategories(page int) ([]CategoryBrief, error) {
 	var results []CategoryBrief
 	pageSize := 5
@@ -287,6 +299,15 @@ func RedeemPromocode(userid int64, code string) (int64, error) {
 		}
 
 		if err := tx.Model(&models.User{}).Where("user_id = ?", userid).Update("balance", gorm.Expr("balance + ?", promocode.Reward)).Error; err != nil {
+			return err
+		}
+
+		usage := models.PromocodeUsage{
+			UserID:      userid,
+			PromocodeID: promocode.ID,
+		}
+
+		if err := tx.Create(&usage).Error; err != nil {
 			return err
 		}
 
