@@ -143,6 +143,21 @@ type ProductsBrief struct {
 	Name string
 }
 
+func AddProduct(categoryID int, name string, description string, price int64) error {
+	product := models.Product{
+		CategoryID:  uint(categoryID),
+		Name:        name,
+		Description: description,
+		Price:       price,
+	}
+
+	return DB.Where(models.Product{CategoryID: uint(categoryID), Name: name}).FirstOrCreate(&product).Error
+}
+
+func DelProduct(productid int) error {
+	return DB.Delete(&models.Product{}, productid).Error
+}
+
 func GetProducts(page int, cat_id int) ([]ProductsBrief, error) {
 	var results []ProductsBrief
 	pageSize := 5
@@ -186,7 +201,7 @@ func BuyProduct(userid int64, productid uint) (string, error) {
 		}
 
 		if user.Balance < product.Price {
-			return fmt.Errorf("недостаточно средств (нужно %d, у вас %d)", product.Price, user.Balance)
+			return fmt.Errorf("недостаточно средств")
 		}
 
 		if err := tx.Where("product_id = ? AND is_sold = ?", productid, false).First(&item).Error; err != nil {
@@ -210,10 +225,85 @@ func BuyProduct(userid int64, productid uint) (string, error) {
 			return err
 		}
 
+		if err := tx.Model(&models.Product{}).Where("id = ?", productid).Update("Stock", gorm.Expr("Stock - ?", 1)).Error; err != nil {
+			return err
+		}
+
 		return nil
 	})
 
 	return soldData, err
+}
+
+type ItemsBrief struct {
+	ID   int
+	Data string
+}
+
+func GetItems(page int, productid int) ([]ItemsBrief, error) {
+	var results []ItemsBrief
+	pageSize := 5
+	offset := (page - 1) * pageSize
+
+	err := DB.Model(&models.Item{}).
+		Select("id", "data").
+		Where("product_id = ?", productid).
+		Limit(pageSize).
+		Offset(offset).
+		Order("id ASC").
+		Scan(&results).Error
+
+	return results, err
+}
+
+func GetItem(itemid int) (models.Item, error) {
+	var item models.Item
+	err := DB.First(&item, itemid).Error
+
+	return item, err
+}
+
+func GetPagesForItems(productid int) (int, error) {
+	var count int64
+
+	err := DB.Model(&models.Item{}).
+		Where("product_id = ?", productid).
+		Count(&count).Error
+
+	if err != nil {
+		return 0, err
+	}
+
+	return int((count + 5 - 1) / 5), nil
+}
+
+func AddItem(productID int, itemData string) error {
+	item := models.Item{
+		ProductID: uint(productID),
+		Data:      itemData,
+		IsSold:    false,
+	}
+
+	err := DB.Model(&models.Product{}).Where("id = ?", productID).Update("Stock", gorm.Expr("Stock + ?", 1)).Error
+	if err != nil {
+		return err
+	}
+
+	return DB.Create(&item).Error
+}
+
+func DelItem(itemid int) error {
+	item, err := GetItem(itemid)
+	if err != nil {
+		return err
+	}
+
+	err = DB.Model(&models.Product{}).Where("id = ?", item.ProductID).Update("Stock", gorm.Expr("Stock - ?", 1)).Error
+	if err != nil {
+		return err
+	}
+
+	return DB.Delete(&models.Item{}, itemid).Error
 }
 
 func AddPurchaseToPurchaseHistory(tx *gorm.DB, userid int64, product models.Product, itemData string, itemid uint) error {

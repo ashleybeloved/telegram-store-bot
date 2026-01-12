@@ -94,6 +94,21 @@ func main() {
 	bh.HandleCallbackQuery(adminCallbacks.CallbackCategoryDelete, th.CallbackDataContains("categoryDelete:"))
 	bh.HandleCallbackQuery(adminCallbacks.CallbackCategoryCreate, th.CallbackDataContains("categoryCreate"))
 
+	bh.HandleCallbackQuery(adminCallbacks.CallbackManageProducts, th.CallbackDataContains("manageProducts"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackNewProduct, th.CallbackDataContains("newProduct:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackNextPage, th.CallbackDataContains("nextPage:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackPrevPage, th.CallbackDataContains("prevPage:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackCategory, th.CallbackDataContains("productsCategoryManage:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackProductManage, th.CallbackDataContains("productManage:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackDeleteProduct, th.CallbackDataContains("deleteProduct:"))
+
+	bh.HandleCallbackQuery(adminCallbacks.CallbackListItems, th.CallbackDataContains("listItems:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackItemManage, th.CallbackDataContains("itemManage:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackNewItem, th.CallbackDataContains("newItem:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackItemDelete, th.CallbackDataContains("itemDelete:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackNextPageItems, th.CallbackDataContains("nextPageItems:"))
+	bh.HandleCallbackQuery(adminCallbacks.CallbackPrevPageItems, th.CallbackDataContains("prevPageItems:"))
+
 	bh.Handle(handlers.SendAdminMenu, th.CommandEqual("admin"))
 
 	log.Println("Bot started")

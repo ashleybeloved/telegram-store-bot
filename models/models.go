@@ -27,7 +27,7 @@ type Product struct {
 	Name        string `gorm:"not null"`
 	Description string `gorm:"not null"`
 	Price       int64  `gorm:"not null"`
-	Stock       int    `gorm:"-"`
+	Stock       int    `gorm:"default:0"`
 	Item        []Item `gorm:"constraint:OnDelete:CASCADE;"`
 }
 

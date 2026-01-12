@@ -47,10 +47,10 @@ func AdminMiddleware(ctx *th.Context, update telego.Update) error {
 		return err
 	}
 
-	switch user.State {
-	case "nothing":
+	switch {
+	case user.State == "nothing":
 		return ctx.Next(update)
-	case "awaiting_create_promocode":
+	case user.State == "awaiting_create_promocode":
 		if update.CallbackQuery != nil {
 			if update.CallbackQuery.Data == "managePromocodes" {
 				storage.SetUserState(userid, "nothing")
@@ -110,7 +110,7 @@ func AdminMiddleware(ctx *th.Context, update telego.Update) error {
 			ctx.Bot().SendMessage(ctx, msg)
 		}
 
-	case "awaiting_create_category":
+	case user.State == "awaiting_create_category":
 		if update.CallbackQuery != nil {
 			if update.CallbackQuery.Data == "manageCategories" {
 				storage.SetUserState(userid, "nothing")
@@ -141,7 +141,100 @@ func AdminMiddleware(ctx *th.Context, update telego.Update) error {
 
 			ctx.Bot().SendMessage(ctx, msg)
 		}
-	}
+	case strings.HasPrefix(user.State, "awaiting_new_product"):
+		if update.CallbackQuery != nil {
+			if strings.Contains(update.CallbackQuery.Data, "productsCategoryManage") {
+				storage.SetUserState(userid, "nothing")
+				return ctx.Next(update)
+			}
 
-	return ctx.Next(update)
+			return nil
+		}
+
+		if update.Message.Text != "" && update.Message != nil {
+			parts := strings.Split(user.State, ":")
+			if len(parts) != 2 {
+				return fmt.Errorf("invalid user state format")
+			}
+
+			categoryID, err := strconv.Atoi(parts[1])
+			if err != nil {
+				return err
+			}
+
+			data := strings.Split(update.Message.Text, "|")
+			if len(data) < 3 {
+				ctx.Bot().SendMessage(ctx, tu.Message(tu.ID(userid), "неверный формат"))
+				return err
+			}
+
+			price, err := strconv.Atoi(data[2])
+			if err != nil {
+				ctx.Bot().SendMessage(ctx, tu.Message(tu.ID(userid), "неверный формат"))
+				return err
+			}
+
+			err = storage.AddProduct(categoryID, data[0], data[1], int64(price))
+			if err != nil {
+				return err
+			}
+
+			storage.SetUserState(userid, "nothing")
+
+			keyboard := tu.InlineKeyboard(
+				tu.InlineKeyboardRow(
+					tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("productsCategoryManage:" + strconv.Itoa(categoryID)),
+				),
+			)
+
+			msg := tu.Message(
+				tu.ID(userid),
+				fmt.Sprintf("🎟 Вы успешно создали товар *%s*", update.Message.Text),
+			).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+
+			ctx.Bot().SendMessage(ctx, msg)
+		}
+	case strings.HasPrefix(user.State, "awaiting_new_item"):
+		if update.CallbackQuery != nil {
+			if strings.Contains(update.CallbackQuery.Data, "listItems") {
+				storage.SetUserState(userid, "nothing")
+				return ctx.Next(update)
+			}
+
+			return nil
+		}
+
+		if update.Message.Text != "" && update.Message != nil {
+			parts := strings.Split(user.State, ":")
+			if len(parts) != 2 {
+				return fmt.Errorf("invalid user state format")
+			}
+
+			productid, err := strconv.Atoi(parts[1])
+			if err != nil {
+				return err
+			}
+
+			err = storage.AddItem(productid, update.Message.Text)
+			if err != nil {
+				return err
+			}
+
+			storage.SetUserState(userid, "nothing")
+
+			keyboard := tu.InlineKeyboard(
+				tu.InlineKeyboardRow(
+					tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("listItems:" + parts[1]),
+				),
+			)
+
+			msg := tu.Message(
+				tu.ID(userid),
+				fmt.Sprintf("🎟 Вы успешно создали элемент товара *%s*", update.Message.Text),
+			).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+
+			ctx.Bot().SendMessage(ctx, msg)
+		}
+	}
+	return nil
 }
