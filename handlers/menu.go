@@ -113,7 +113,7 @@ func SendProfile(ctx *th.Context, update telego.Update) (err error) {
 			user.Firstname,
 			user.ID,
 			user.LangCode,
-			user.Balance)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
+			user.Balance/100)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().SendMessage(ctx, msg)
 
@@ -157,7 +157,52 @@ func SendSupport(ctx *th.Context, update telego.Update) (err error) {
 	return nil
 }
 
-func SendPurchases(ctx *th.Context, update telego.Update) (err error) {
+func SendPurchasesHistory(ctx *th.Context, update telego.Update) (err error) {
+	page := 1
+
+	pages, err := storage.GetPagesForPurchasesHistory(update.Message.From.ID)
+	if err != nil {
+		return err
+	}
+
+	history, err := storage.GetPurchasesHistory(update.Message.From.ID)
+	if err != nil {
+		return err
+	}
+
+	var rows [][]telego.InlineKeyboardButton
+
+	if pages == 0 {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("У вас нет купленных товаров").WithCallbackData(" "),
+		))
+		pages = 1
+	}
+
+	for _, purchase := range history {
+		rows = append(rows, tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton(purchase.Name).WithCallbackData(fmt.Sprintf("purchase:%d", purchase.ID)),
+		))
+	}
+
+	rows = append(rows,
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("<").WithCallbackData(fmt.Sprintf("prevPagePurchases:%d:%d", page-1, pages)),
+			tu.InlineKeyboardButton(fmt.Sprintf("%d/%d", page, pages)).WithCallbackData(" "),
+			tu.InlineKeyboardButton(">").WithCallbackData(fmt.Sprintf("nextPagePurchases:%d:%d", page+1, pages)),
+		),
+		tu.InlineKeyboardRow(
+			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
+		),
+	)
+
+	keyboard := tu.InlineKeyboard(rows...)
+	msg := tu.Message(
+		tu.ID(update.Message.From.ID),
+		"Ваши купленные товары:",
+	).WithReplyMarkup(keyboard)
+
+	ctx.Bot().SendMessage(ctx, msg)
 
 	return nil
 }

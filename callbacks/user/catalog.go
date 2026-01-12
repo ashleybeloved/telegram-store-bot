@@ -127,7 +127,6 @@ func CallbackPrevPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
-			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
 		),
 	)
 
@@ -178,7 +177,6 @@ func CallbackNextPageCat(ctx *th.Context, query telego.CallbackQuery) error {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancel"),
-			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
 		),
 	)
 
@@ -232,7 +230,6 @@ func CallbackCategory(ctx *th.Context, query telego.CallbackQuery) error {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancelCat"),
-			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
 		),
 	)
 
@@ -290,7 +287,6 @@ func CallbackPrevPage(ctx *th.Context, query telego.CallbackQuery) error {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancelCat"),
-			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
 		),
 	)
 
@@ -348,7 +344,6 @@ func CallbackNextPage(ctx *th.Context, query telego.CallbackQuery) error {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("⬅️ Назад").WithCallbackData("cancelCat"),
-			tu.InlineKeyboardButton("🔍 Поиск").WithCallbackData("search"),
 		),
 	)
 
@@ -461,8 +456,8 @@ func CallbackBuy(ctx *th.Context, query telego.CallbackQuery) error {
 
 	rows = append(rows,
 		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("⬅️ В Каталог").WithCallbackData(fmt.Sprintf("cancelCat:%d", product.ID)),
-			tu.InlineKeyboardButton("🛒 Мои покупки").WithCallbackData(fmt.Sprintf("category:%d", product.CategoryID)),
+			tu.InlineKeyboardButton("⬅️ В Каталог").WithCallbackData("cancelCat"),
+			tu.InlineKeyboardButton("🛒 Мои покупки").WithCallbackData("purchasesHistory"),
 		),
 	)
 

@@ -45,7 +45,7 @@ func CallbackCreatePromocode(ctx *th.Context, query telego.CallbackQuery) error 
 	editMsg := tu.EditMessageText(
 		tu.ID(query.From.ID),
 		query.Message.Message().MessageID,
-		"🎫 *Создание промокода*\n\nОтправьте данные через пробел:\n`КОД СУММА АКТИВАЦИИ ЧАСЫ`\n\n*Параметры:*\n1. *Код* — название (напр. `GIFT2026`)\n2. *Сумма* — бонус в рублях\n3. *Активации* — кол-во штук\n4. *Часы* — время жизни\n\n*Пример:*\n`PROMO100 100 50 12`",
+		"🎫 *Создание промокода*\n\nОтправьте данные через пробел:\n`КОД СУММА АКТИВАЦИИ ЧАСЫ`\n\n*Параметры:*\n1. *Код* — название (напр. `GIFT2026`)\n2. *Сумма* — бонус в копейках\n3. *Активации* — кол-во штук\n4. *Часы* — время жизни\n\n*Пример:*\n`PROMO100 10000 50 12`",
 	).WithReplyMarkup(keyboard).WithParseMode(telego.ModeMarkdown)
 
 	err := storage.SetUserState(query.From.ID, "awaiting_create_promocode")
@@ -243,7 +243,7 @@ func CallbackPromocodeAdmin(ctx *th.Context, query telego.CallbackQuery) error {
 	editMsg := tu.EditMessageText(
 		tu.ID(query.From.ID),
 		query.Message.Message().MessageID,
-		fmt.Sprintf("🎫 *Промокод:* %s\n\n*Бонус:* %d₽\n*Активаций:* %d\n*Осталось активаций:* %d\n*Истекает через:* %s\n*Создан:* %s", promocode.Code, promocode.Reward, promocode.MaxUses, promocode.UsesLeft, promocode.ExpiresAt.Format("02 Jan 2006 15:04"), promocode.CreatedAt.Format("02 Jan 2006 15:04")),
+		fmt.Sprintf("🎫 *Промокод:* %s\n\n*Бонус:* %d₽\n*Активаций:* %d\n*Осталось активаций:* %d\n*Истекает через:* %s\n*Создан:* %s", promocode.Code, promocode.Reward/100, promocode.MaxUses, promocode.UsesLeft, promocode.ExpiresAt.Format("02 Jan 2006 15:04"), promocode.CreatedAt.Format("02 Jan 2006 15:04")),
 	).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(keyboard)
 
 	ctx.Bot().EditMessageText(ctx, editMsg)

@@ -14,12 +14,6 @@ func SendAdminMenu(ctx *th.Context, update telego.Update) error {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("🎟 Управление промокодами").WithCallbackData("managePromocodes"),
-		),
-		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("👥 Управление пользователями").WithCallbackData("manageUsers"),
-		),
-		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("📊 Статистика").WithCallbackData("viewStats"),
 		))
 
 	ctx.Bot().SendMessage(ctx, tu.Message(

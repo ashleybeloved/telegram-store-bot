@@ -132,6 +132,16 @@ func AddPurchaseToPurchasesHistory(tx *gorm.DB, userid int64, product models.Pro
 	return tx.Create(&purchase).Error
 }
 
+func GetPurchase(purchase_id int) (models.PurchasesHistory, error) {
+	var purchase models.PurchasesHistory
+	err := DB.First(&purchase, purchase_id).Error
+	if err != nil {
+		return purchase, err
+	}
+
+	return purchase, nil
+}
+
 func GetPurchasesHistory(userid int64) ([]models.PurchasesHistory, error) {
 	var history []models.PurchasesHistory
 

@@ -51,7 +51,7 @@ func main() {
 
 	bh.Handle(handlers.SendCatalog, th.TextEqual("🛍 Каталог"))
 	bh.Handle(handlers.SendProfile, th.TextEqual("👤 Профиль"))
-	bh.Handle(handlers.SendPurchases, th.TextEqual("🛒 Мои покупки"))
+	bh.Handle(handlers.SendPurchasesHistory, th.TextEqual("🛒 Мои покупки"))
 	bh.Handle(handlers.SendDeposit, th.TextEqual("💳 Пополнить баланс"))
 	bh.Handle(handlers.SendSupport, th.TextEqual("🆘 Поддержка"))
 
@@ -69,8 +69,14 @@ func main() {
 	bh.HandleCallbackQuery(callbacks.CallbackCancel, th.CallbackDataEqual("cancel"))
 
 	bh.HandleCallbackQuery(callbacks.CallbackRefreshProfile, th.CallbackDataEqual("profileRefresh"))
+
 	bh.HandleCallbackQuery(callbacks.CallbackPromoCode, th.CallbackDataEqual("promoCode"))
 	bh.HandleCallbackQuery(callbacks.CallbackCancelPromocode, th.CallbackDataEqual("cancelPromocode"))
+
+	bh.HandleCallbackQuery(callbacks.CallbackPurchasesHistory, th.CallbackDataContains("purchasesHistory"))
+	bh.HandleCallbackQuery(callbacks.CallbackPurchase, th.CallbackDataContains("purchase:"))
+	bh.HandleCallbackQuery(callbacks.CallbackNextPagePurchases, th.CallbackDataContains("nextPagePurchases:"))
+	bh.HandleCallbackQuery(callbacks.CallbackPrevPagePurchases, th.CallbackDataContains("prevPagePurchases:"))
 
 	// Admin Middlewarec, Callbacks and Handlers
 

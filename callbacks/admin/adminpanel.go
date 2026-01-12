@@ -13,12 +13,6 @@ func CallbackAdminMenu(ctx *th.Context, query telego.CallbackQuery) error {
 		),
 		tu.InlineKeyboardRow(
 			tu.InlineKeyboardButton("🎟 Управление промокодами").WithCallbackData("managePromocodes"),
-		),
-		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("👥 Управление пользователями").WithCallbackData("manageUsers"),
-		),
-		tu.InlineKeyboardRow(
-			tu.InlineKeyboardButton("📊 Статистика").WithCallbackData("viewStats"),
 		))
 
 	editMsg := tu.EditMessageText(
