@@ -22,7 +22,7 @@ func CallbackRefreshProfile(ctx *th.Context, query telego.CallbackQuery) error {
 			user.Firstname,
 			user.ID,
 			user.LangCode,
-			user.Balance)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(query.Message.Message().ReplyMarkup)
+			user.Balance/100)).WithParseMode(telego.ModeMarkdown).WithReplyMarkup(query.Message.Message().ReplyMarkup)
 
 	ctx.Bot().EditMessageText(ctx, editMsg)
 
